@@ -37,7 +37,7 @@ namespace ReportManager.Subcommands
                         return;
 
                     }
-                    Reports.Insert(args.Player.Name, args.Player.X, args.Player.Y, ReportType.Other, args.Parameters[1]);
+                    Reports.Insert(args.Player.Name, args.Player.X, args.Player.Y, ReportType.Other, string.Join(" ", args.Parameters.Skip(1)));
                     type = ReportType.Other;
                     break;
                 case "user":
@@ -46,7 +46,7 @@ namespace ReportManager.Subcommands
                         args.Player.SendErrorMessage("Invalid syntax. Valid syntax: '/report user <player> \"<reason>\"'");
                         return;
                     }
-                    Reports.Insert(args.Player.Name, args.Player.X, args.Player.Y, ReportType.User, args.Parameters[2], args.Parameters[1]);
+                    Reports.Insert(args.Player.Name, args.Player.X, args.Player.Y, ReportType.User, string.Join(" ", args.Parameters.Skip(2)), args.Parameters[1]);
                     type = ReportType.User;
                     break;
                 default:
@@ -71,7 +71,7 @@ namespace ReportManager.Subcommands
 
                 if (type == ReportType.User)
                     builder.AddField("Target", args.Parameters[1])
-                        .AddField("Reason", args.Parameters[2]);
+                        .AddField("Reason", string.Join(" ", args.Parameters.Skip(2)));
                 client.SendMessageAsync("", false, new[] { builder.Build() });
             }
 
