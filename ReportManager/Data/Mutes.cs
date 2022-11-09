@@ -1,4 +1,4 @@
-﻿using Mono.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -76,7 +76,7 @@ namespace ReportManager.Data
                     break;
 
                 case "sqlite":
-                    db = new SqliteConnection($"uri=file://{Path.Combine(TShock.SavePath, "Mutes.sqlite")},Version=3");
+                    db = new SqliteConnection($"Data Source={Path.Combine(TShock.SavePath, "Mutes.sqlite")}");
                     break;
 
                 default:
