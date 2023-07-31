@@ -32,6 +32,11 @@ namespace ReportManager.Subcommands
             if (acc == null)
                 return;
             var warnings = Warnings.GetAll(acc.UUID);
+            if (warnings.FirstOrDefault() == null) {
+                args.Player.SendErrorMessage("There are no warnings to read!");
+                return;
+            }
+
             var single = warnings.FirstOrDefault();
             var mod = TShock.UserAccounts.GetUserAccountByID(single.ModID);
 
