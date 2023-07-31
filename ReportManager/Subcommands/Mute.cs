@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TShockAPI;
 using ReportManager.Data;
-using Discord;
-using Discord.Webhook;
 
 namespace ReportManager.Subcommands
 {
@@ -135,6 +130,9 @@ namespace ReportManager.Subcommands
             }
             if (int.TryParse(args.Parameters[1], out int result))
             {
+                var mute = Mutes.Get(result);
+                TSPlayer muted = TSPlayer.FindByNameOrID(mute.Username)[0];
+                muted.mute = false;
                 Mutes.Remove(result);
                 args.Player.SendSuccessMessage($"Succesfully deleted mute: {result}");
             }

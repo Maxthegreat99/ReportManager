@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
-using TShockAPI.Hooks;
 using ReportManager.Data;
-using Discord.Webhook;
-using Discord.Rest;
-using Discord;
-using System.Timers;
+
 
 namespace ReportManager
 {
@@ -25,7 +18,7 @@ namespace ReportManager
             => new Version(2, 0);
 
         public override string Author
-            => "Rozen4334";
+            => "Rozen4334, updated by csmir + RenderBr + Maxthegreat99";
 
         public override string Description
             => "A plugin that manages reports, warnings & mutes";
@@ -185,6 +178,7 @@ namespace ReportManager
 
         private void Report(CommandArgs args)
         {
+
             switch(args.Parameters.FirstOrDefault())
             {
                 case "help":

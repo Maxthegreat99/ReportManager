@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TShockAPI;
 using ReportManager.Data;
 
@@ -23,7 +20,8 @@ namespace ReportManager.Subcommands
                 args.Player.SendErrorMessage("User not found! NOTE: If the target has not registered they cannot be warned as they don't exist in the database.");
                 return;
             }
-            var mod = TShock.UserAccounts.GetUserAccountByName(args.Player.Name);
+            
+            var mod = args.Player.RealPlayer ? TShock.UserAccounts.GetUserAccountByName(args.Player.Name) : TSPlayer.Server.Account;
             Warnings.Insert(acc.UUID, acc.Name, args.Parameters[1], mod.ID);
             args.Player.SendSuccessMessage($"Succesfully warned '{acc.Name}' for: {args.Parameters[1]}");
         }

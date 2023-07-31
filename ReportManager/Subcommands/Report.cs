@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TShockAPI;
 using ReportManager.Data;
 using Discord.Webhook;
 using Discord;
-using Discord.Rest;
-
 namespace ReportManager.Subcommands
 {
     class Report
@@ -50,6 +46,7 @@ namespace ReportManager.Subcommands
                     type = ReportType.User;
                     break;
                 default:
+                    Report.Help(args);
                     return;
             }
 
