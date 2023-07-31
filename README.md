@@ -29,9 +29,13 @@ Report Manager uses Discord.Net dependencies to send reports through Webhooks, y
 - [Discord.Net.Core](https://www.nuget.org/packages/Discord.Net.Core/)
 ### How To Download The Dependencies
 - 1. On the webpages above(https://www.nuget.org), you can click on "Open in NuGet package explorer"
+     
      ![image](https://github.com/Maxthegreat99/ReportManager/assets/100855415/813b74db-ff84-4936-b6a6-5a79d426113a)
+     
 - 2. In the NuGet package explorer you'll find the `.dll` of the dependency you want embed in the `lib > net6.0` directory
+     
      ![image](https://github.com/Maxthegreat99/ReportManager/assets/100855415/8930e196-b304-4d11-b43c-5d5b2a77f62a)
+     
 - 3. Now all you need to do is download the `.dll` put it in the `\ServerPlugins\` folder and there you go! Task completed!
 
 
