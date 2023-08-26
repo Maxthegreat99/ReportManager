@@ -1,5 +1,5 @@
 # ReportManager
-A plugin for TShock allowing giving servers easy-to-use report, warn and mute commands.
+A plugin for TShock giving servers easy-to-use report, warn and mute commands.
 
 - Originally made by Rozen4334
 - Patched and updated for to **TShock** `5.0` by [csmir](https://github.com/csmir) & [RenderBr](https://github.com/RenderBr)
