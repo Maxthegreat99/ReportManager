@@ -9,8 +9,19 @@ namespace ReportManager.Subcommands
 {
     class Report
     {
+        public static Dictionary<string, int> currentReportsPerPlayer = new Dictionary<string, int>();
         public static void Add(CommandArgs args)
         {
+            if (!currentReportsPerPlayer.ContainsKey(args.Player.Name))
+                currentReportsPerPlayer.Add(args.Player.Name, 0);
+
+            else if (!args.Player.HasPermission(ReportManager.Permissions.ignoreReportLimit) 
+                     && currentReportsPerPlayer[args.Player.Name] >= Config.Settings.MaxReportsPerMinute)
+            {
+                args.Player.SendErrorMessage("You have already reached your reports per minute limit!");
+                return;
+            } 
+
             ReportType type;
             switch(args.Parameters[0])
             {
@@ -72,7 +83,13 @@ namespace ReportManager.Subcommands
                 client.SendMessageAsync("", false, new[] { builder.Build() });
             }
 
+            foreach(var player in TShock.Players)
+            {
+                if (player.HasPermission(ReportManager.Permissions.receiveReportNotif))
+                    player.SendMessage(string.Format("[Report Manager] Player {0} has created a Report of type [{1}]!", args.Player.Name, args.Parameters[0]), Microsoft.Xna.Framework.Color.Magenta);
+            }
             args.Player.SendSuccessMessage("Succesfully reported!");
+            currentReportsPerPlayer[args.Player.Name]++;
         }
 
         public static void Teleport(CommandArgs args)
@@ -207,5 +224,6 @@ namespace ReportManager.Subcommands
                     }
                 );
         }
+
     }
 }

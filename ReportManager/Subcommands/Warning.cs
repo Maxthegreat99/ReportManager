@@ -28,9 +28,12 @@ namespace ReportManager.Subcommands
 
         public static void Read(CommandArgs args)
         {
-            var acc = TShock.UserAccounts.GetUserAccountByName(args.Player.Name);
+            var acc = args.Player.Account;
             if (acc == null)
+            {
+                args.Player.SendErrorMessage("Unable to get your account! (Are you logged in?)");
                 return;
+            }
             var warnings = Warnings.GetAll(acc.UUID);
             if (warnings.FirstOrDefault() == null) {
                 args.Player.SendErrorMessage("There are no warnings to read!");
@@ -78,12 +81,13 @@ namespace ReportManager.Subcommands
             {
                 var acc = TShock.UserAccounts.GetUserAccountByName(r.Username);
                 var mod = TShock.UserAccounts.GetUserAccountByID(r.ModID);
+                
                 if (acc == null)
                 {
                     Warnings.Remove(r.ID);
                     continue;
                 }
-                wlist.Add($"{r.ID} | {acc.Name}, by: {mod.Name} - {r.Reason}");
+                wlist.Add($"{r.ID} | {acc.Name}, by: {((mod != null) ? mod.Name : "Unknown")} - {r.Reason}");
             }
 
             PaginationTools.SendPage(args.Player, pageNumber, wlist,

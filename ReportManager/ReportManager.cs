@@ -4,7 +4,8 @@ using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
 using ReportManager.Data;
-
+using System.Collections.Generic;
+using System.Timers;
 
 namespace ReportManager
 {
@@ -15,7 +16,7 @@ namespace ReportManager
             => "ReportManager";
 
         public override Version Version
-            => new Version(2, 1);
+            => new Version(2, 2);
 
         public override string Author
             => "Rozen4334, updated by csmir + RenderBr + Maxthegreat99";
@@ -31,8 +32,11 @@ namespace ReportManager
             public const string report = "reportmanager.report";
 
             public const string staff = "reportmanager.staff";
-        }
 
+            public const string receiveReportNotif = "reportmanager.notifreports";
+
+            public const string ignoreReportLimit = "reportmanager.ignorereportlimit";
+        }
         public override void Initialize()
         {
             Commands.ChatCommands.Add(new Command(Permissions.report, Report, "report", "rep"));
@@ -44,11 +48,22 @@ namespace ReportManager
             ServerApi.Hooks.NetGreetPlayer.Register(this, OnGreet);
 
             Time = DateTime.UtcNow;
+            
+            reportLimitReset.Interval = 60000;
+            reportLimitReset.Elapsed += new ElapsedEventHandler(ResetReportsLimit);
+
 
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
         }
 
+        private System.Timers.Timer reportLimitReset = new System.Timers.Timer();
         private DateTime Time;
+
+
+        internal static void ResetReportsLimit(object sender, ElapsedEventArgs args)
+        {
+            Subcommands.Report.currentReportsPerPlayer = new Dictionary<string, int>();
+        }
         private void OnUpdate(EventArgs args)
         {
             if ((DateTime.UtcNow - Time).TotalSeconds > 5)
@@ -80,6 +95,13 @@ namespace ReportManager
                                 plr.mute = false;
                             }
                         }
+                        else if (mutes == null && plr.mute == true)
+                        {
+                            plr.mute = false;
+                            plr.SendSuccessMessage("You have been unmuted!");
+                        }
+
+                        
                     }
                 }
             }
@@ -153,7 +175,10 @@ namespace ReportManager
                 case "del":
                 case "d":
                     if (!args.Player.HasPermission(Permissions.staff))
+                    {
                         args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
                     Subcommands.Warning.Delete(args);
                     break;
                 case "read":
@@ -163,14 +188,20 @@ namespace ReportManager
                 case "list":
                 case "l":
                     if (!args.Player.HasPermission(Permissions.staff))
+                    {
                         args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
                     Subcommands.Warning.List(args);
                     break;
                 default:
                     if (args.Parameters.Count == 0)
                         Subcommands.Warning.Help(args);
                     else if (!args.Player.HasPermission(Permissions.staff))
-                        args.Player.SendErrorMessage("Invalid subcommand."); 
+                    {
+                        args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
                     else Subcommands.Warning.Add(args);
                     break;
             }
@@ -189,25 +220,37 @@ namespace ReportManager
                 case "del":
                 case "d":
                     if (!args.Player.HasPermission(Permissions.staff))
+                    {
                         args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
                     Subcommands.Report.Delete(args);
                     break;
                 case "teleport":
                 case "tp":
                     if (!args.Player.HasPermission(Permissions.staff))
+                    {
                         args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
                     Subcommands.Report.Teleport(args);
                     break;
                 case "list":
                 case "l":
                     if (!args.Player.HasPermission(Permissions.staff))
+                    {
                         args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
                     Subcommands.Report.List(args);
                     break;
                 case "info":
                 case "i":
                     if (!args.Player.HasPermission(Permissions.staff))
+                    {
                         args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
                     Subcommands.Report.Info(args);
                     break;
                 default:

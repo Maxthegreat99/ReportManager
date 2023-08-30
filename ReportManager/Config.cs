@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using TShockAPI;
 
@@ -22,6 +23,11 @@ namespace ReportManager
         /// </summary>
         public string WebHook;
 
+        /// <summary>
+        /// Maximum reports a player can create every minute.
+        /// </summary>
+        public int MaxReportsPerMinute;
+
         public static Settings Read()
         {
             string configPath = Path.Combine(TShock.SavePath, "ReportConfig.json");
@@ -42,7 +48,8 @@ namespace ReportManager
         {
             return new Settings()
             {
-                WebHook = ""
+                WebHook = "",
+                MaxReportsPerMinute = 3
             };
         }
     }

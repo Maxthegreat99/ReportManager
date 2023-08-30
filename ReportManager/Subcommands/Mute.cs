@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TShockAPI;
 using ReportManager.Data;
+using System.Linq;
 
 namespace ReportManager.Subcommands
 {
@@ -23,6 +24,7 @@ namespace ReportManager.Subcommands
                 {
                     args.Player.SendErrorMessage("Invalid bool on parameter: (doip). Options are: 'true' or 'false'.\n " +
                         "Set to true in assumption that this parameter is only defined if it is required.");
+                    return;
                 }
             TSPlayer player = args.Player;
             if (Extensions.ParsePlayer(args.Player, args.Parameters[0], out player, false))
@@ -40,6 +42,7 @@ namespace ReportManager.Subcommands
                             {
                                 args.Player.SendInfoMessage($"Muted: {player.Name} for {(seconds / 60)} minutes. (Until: {duration}) for: {args.Parameters[2]}.");
                                 player.SendErrorMessage($"You were muted for {(seconds / 60)} minutes. For: {args.Parameters[2]}");
+                                return;
                             }
                         }
                         else
@@ -47,6 +50,7 @@ namespace ReportManager.Subcommands
                             Mutes.Insert(player, "", args.Player.Account.ID, doip, duration);
                             args.Player.SendInfoMessage($"Muted: {player.Name} for {(seconds / 60)} minutes.");
                             player.SendErrorMessage($"You were muted for {(seconds / 60)}");
+                            return;
                         }
                     }
                     else if (args.Parameters[1] == "0")
@@ -56,15 +60,22 @@ namespace ReportManager.Subcommands
                             Mutes.Insert(player, args.Parameters[2], args.Player.Account.ID, doip);
                             args.Player.SendInfoMessage($"Muted: {player.Name} permanently for: {args.Parameters[2]}.");
                             player.SendErrorMessage($"You were permanently muted by: {args.Player.Name}. For: {args.Parameters[2]}!");
+                            return;
                         }
                         else
                         {
                             Mutes.Insert(player, "", args.Player.Account.ID, doip);
                             args.Player.SendSuccessMessage($"Permanently muted: {player.Name}");
                             player.SendErrorMessage($"You were permanently muted by: {args.Player.Name}.");
+                            return;
                         }
                     }
-                    else args.Player.SendErrorMessage("Invalid time string. Valid string: <0d0h0m0s>");
+                    else
+                    {
+                        args.Player.SendErrorMessage("Invalid time string. Valid string: <0d0h0m0s>");
+                        player.mute = false;
+                        return;
+                    }
                 }
                 else
                 {
@@ -77,7 +88,10 @@ namespace ReportManager.Subcommands
             {
                 var account = TShock.UserAccounts.GetUserAccountByName(args.Parameters[0]);
                 if (account == null)
+                {
                     args.Player.SendErrorMessage("Player or account not found!");
+                    return;
+                }
                 else
                 {
                     if (args.Parameters.Count > 1)
@@ -110,12 +124,17 @@ namespace ReportManager.Subcommands
                                 args.Player.SendSuccessMessage($"Permanently muted: {account.Name}");
                             }
                         }
-                        else args.Player.SendErrorMessage("Invalid time string. Valid string: <0d0h0m0s>");
+                        else
+                        {
+                            args.Player.SendErrorMessage("Invalid time string. Valid string: <0d0h0m0s>");
+                            return;
+                        }
                     }
                     else
                     {
                         Mutes.Insert(account, "", args.Player.Account.ID);
                         args.Player.SendSuccessMessage($"Permanently muted: {account.Name}");
+                        return;
                     }
                 }
             }
@@ -128,11 +147,15 @@ namespace ReportManager.Subcommands
                 args.Player.SendErrorMessage("Invalid syntax. Valid syntax: '/mute delete <id>'");
                 return;
             }
-            if (int.TryParse(args.Parameters[1], out int result))
+            if (int.TryParse(args.Parameters[1], out int result) && Mutes.Get(result) != null)
             {
                 var mute = Mutes.Get(result);
-                TSPlayer muted = TSPlayer.FindByNameOrID(mute.Username)[0];
-                muted.mute = false;
+                TSPlayer muted = TSPlayer.FindByNameOrID(mute.Username).FirstOrDefault();
+                if (muted != null)
+                {
+                    muted.mute = false;
+                    muted.SendInfoMessage("You have been unmuted!");
+                }
                 Mutes.Remove(result);
                 args.Player.SendSuccessMessage($"Succesfully deleted mute: {result}");
             }
@@ -146,10 +169,10 @@ namespace ReportManager.Subcommands
                 args.Player.SendErrorMessage("Invalid syntax. Valid syntax: '/mute info <id>'");
                 return;
             }
-            if (int.TryParse(args.Parameters[1], out int result))
+            if (int.TryParse(args.Parameters[1], out int result) && Mutes.Get(result) != null)
             {
                 var mute = Mutes.Get(result);
-                args.Player.SendInfoMessage($"{mute.ID} | {mute.Username}, expires on: {mute.Expiration}\nReason: {mute.Reason}\nIs IP? {((mute.IP != "") ? "true" : "false")}");
+                args.Player.SendInfoMessage($"{mute.ID} | {mute.Username}, expires on: {mute.Expiration}\nReason: {(mute.Reason == "" ? "Unknown" : mute.Reason)}\nIs IP? {((mute.IP != "") ? "true" : "false")}");
             }
             else args.Player.SendErrorMessage("Invalid ID, are you sure you specified a valid mute to read?");
         }
@@ -170,7 +193,11 @@ namespace ReportManager.Subcommands
             foreach (var m in mutes)
             {
                 var mod = TShock.UserAccounts.GetUserAccountByID(m.ModID);
-                wlist.Add($"{m.ID} | {m.Username}, by: {mod.Name} - {m.Reason}");
+                if(mod == null)
+                    mod = new TShockAPI.DB.UserAccount("Unknown", "", "", "", "", "", "");
+                
+                    
+                wlist.Add($"{m.ID} | {m.Username}, by: {mod.Name} - {(m.Reason != "" ? m.Reason : "Unknown")}");
             }
 
             PaginationTools.SendPage(args.Player, pageNumber, wlist,
