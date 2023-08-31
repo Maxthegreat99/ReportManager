@@ -19,15 +19,18 @@ A plugin for TShock giving servers easy-to-use report, warn and mute commands.
 ### Permissions
 - `reportmanager.report` - gives access to the `report` command.
 - `reportmanager.staff` - gives access to the staff level subcommands for the 3 commands mentioned above(ex. `mute`, `report teleport`, `warn del` etc...)
+- `reportmanager.notifreports` - get notified ingame of when a player creates a report.
+- `reportmanager.ignorereportlimit` - allows the player to bypass the `MaxReportsPerMinute` configuration.
 ### Configs
 - `WebHook` - the Webhook URL that the plugin will use to post reports to your desired discord channel. [*Heres a tutorial on how to create a webhook*](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
+- `MaxReportsPerMinute` - the maximum amount of reports a player can create per minute.
 
 ## Dependencies
-Report Manager uses Discord.Net dependencies to send reports through Webhooks, you can get them here:
+Report Manager uses Discord.Net dependencies to send reports through Webhooks, you can either get from from each [realease](github.com/Maxthegreat99/ReportManager/releasesa) or get them here from source here:
 - [Discord.Net.Webhooks](https://www.nuget.org/packages/Discord.Net.Webhook/#versions-body-tab)
 - [Discord.Net.Rest](https://www.nuget.org/packages/Discord.Net.Rest/)
 - [Discord.Net.Core](https://www.nuget.org/packages/Discord.Net.Core/)
-### How To Download The Dependencies
+### How To Download The Dependencies From Source
 - 1. On the webpages above(https://www.nuget.org), you can click on "Open in NuGet package explorer"
      
      ![image](https://github.com/Maxthegreat99/ReportManager/assets/100855415/813b74db-ff84-4936-b6a6-5a79d426113a)
