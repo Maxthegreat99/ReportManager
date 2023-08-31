@@ -16,7 +16,7 @@ namespace ReportManager
             => "ReportManager";
 
         public override Version Version
-            => new Version(2, 2);
+            => new Version(2, 2, 1);
 
         public override string Author
             => "Rozen4334, updated by csmir + RenderBr + Maxthegreat99";
