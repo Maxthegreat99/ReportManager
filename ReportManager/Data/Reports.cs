@@ -37,6 +37,24 @@ namespace ReportManager.Data
         Other,
     }
 
+    public class ReportMute
+    {
+        /// <summary>
+        /// ID of the report mute.
+        /// </summary>
+        public int ID { get; set; }
+
+        /// <summary>
+        /// ID of the user doing this report mute.
+        /// </summary>
+        public string User { get; set; }
+
+        /// <summary>
+        /// The expiration moment of this report mute.
+        /// </summary>
+        public DateTime Expiration { get; set; }
+    }
+
     public class Report
     {
         /// <summary>
@@ -119,6 +137,11 @@ namespace ReportManager.Data
                 new SqlColumn("reason", MySqlDbType.Text),
                 new SqlColumn("time", MySqlDbType.Text),
                 new SqlColumn("target", MySqlDbType.Text)));
+
+            creator.EnsureTableStructure(new SqlTable("rmreportmutes",
+                new SqlColumn("id", MySqlDbType.Int32) { Primary = true, AutoIncrement = true },
+                new SqlColumn("expiration", MySqlDbType.Text),
+                new SqlColumn("username", MySqlDbType.Text)));
         }
 
         public static void Insert(string username, float x, float y, ReportType type, string reason = null, string target = null)
@@ -126,10 +149,21 @@ namespace ReportManager.Data
             string query = $"INSERT INTO rmreports (username, x, y, type, reason, time, target) VALUES ('{username}', '{x}', '{y}', {((int)type)}, '{reason}', '{(DateTime.UtcNow)}', '{target}');";
             db.Query(query);
         }
+        public static void InsertMute(string username, DateTime? time = null)
+        {
+            string query = $"INSERT INTO rmreportmutes (username, expiration) VALUES ('{username}', '{(time ?? DateTime.MaxValue).ToString()}');";
+            db.Query(query);
+        }
 
         public static void Remove(int id)
         {
             string query = $"DELETE FROM rmreports WHERE id = {id}";
+            db.Query(query);
+        }
+
+        public static void RemoveMute(int id)
+        {
+            string query = $"DELETE FROM rmreportmutes WHERE id = {id}";
             db.Query(query);
         }
 
@@ -174,6 +208,25 @@ namespace ReportManager.Data
             return null;
         }
 
+        public static ReportMute GetMutedUser(int id)
+        {
+            string query = $"SELECT * FROM rmreportmutes WHERE id = {id};";
+            using (var result = db.QueryReader(query))
+            {
+                if (result.Read())
+                {
+                    var reportMute = new ReportMute()
+                    {
+                        ID = result.Get<int>("id"),
+                        User = result.Get<string>("username"),
+                        Expiration = DateTime.Parse(result.Get<string>("expiration"))
+                    };
+                    return reportMute;
+                }
+            }
+            return null;
+        }
+
         public static IEnumerable<Report> GetAll()
         {
             string query = $"SELECT * FROM rmreports;";
@@ -194,6 +247,24 @@ namespace ReportManager.Data
                     };
 
                     yield return report;
+                }
+            }
+        }
+
+        public static IEnumerable<ReportMute> GetAllMutes()
+        {
+            string query = $"SELECT * FROM rmreportmutes;";
+            using (var result = db.QueryReader(query))
+            {
+                while (result.Read())
+                {
+                    var reportMute = new ReportMute()
+                    {
+                        ID = result.Get<int>("id"),
+                        User = result.Get<string>("username"),
+                        Expiration = DateTime.Parse(result.Get<string>("expiration"))
+                    };
+                    yield return reportMute;
                 }
             }
         }

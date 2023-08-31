@@ -5,6 +5,8 @@ using TShockAPI;
 using ReportManager.Data;
 using Discord.Webhook;
 using Discord;
+
+
 namespace ReportManager.Subcommands
 {
     class Report
@@ -85,11 +87,101 @@ namespace ReportManager.Subcommands
 
             foreach(var player in TShock.Players)
             {
+                if (player == null)
+                    continue;
                 if (player.HasPermission(ReportManager.Permissions.receiveReportNotif))
                     player.SendMessage(string.Format("[Report Manager] Player {0} has created a Report of type [{1}]!", args.Player.Name, args.Parameters[0]), Microsoft.Xna.Framework.Color.Magenta);
             }
             args.Player.SendSuccessMessage("Succesfully reported!");
             currentReportsPerPlayer[args.Player.Name]++;
+        }
+
+        public static void MuteAdd(CommandArgs args)
+        {
+            if (args.Parameters.Count != 2 && args.Parameters.Count != 3)
+            {
+                args.Player.SendErrorMessage("Invalid syntax. Valid syntax: '/report mute <player> <0d0h0m0s>'");
+                return;
+            }
+
+            TSPlayer player;
+
+            if (Extensions.ParsePlayer(args.Player, args.Parameters[1], out player, false) 
+                || TShock.UserAccounts.GetUserAccountByName(args.Parameters[1]) != null )
+            {
+                DateTime duration = DateTime.MaxValue;
+                int seconds = 0;
+
+                if (args.Parameters.Count == 3 && TShock.Utils.TryParseTime(args.Parameters[2], out seconds))
+                    duration = DateTime.UtcNow.AddSeconds(seconds);
+
+                var username = (TSPlayer.FindByNameOrID(args.Parameters[1]).FirstOrDefault() != null ?
+                                TSPlayer.FindByNameOrID(args.Parameters[1]).FirstOrDefault().Name :
+                                TShock.UserAccounts.GetUserAccountByName(args.Parameters[1]).Name);
+
+                Reports.InsertMute(username, duration);
+                args.Player.SendSuccessMessage("Prohibited {0} from using /report {1}!", username, (seconds == 0 ? "permanently" : $"for {(seconds / 60)} minutes"));
+
+
+                if (TSPlayer.FindByNameOrID(args.Parameters[1]).FirstOrDefault() != null)
+                    TSPlayer.FindByNameOrID(args.Parameters[1]).FirstOrDefault().
+                    SendErrorMessage("{0} prohibited you from using /report {1}!", args.Player.Name, (seconds == 0 ? "permanently" : $"for {(seconds / 60)} minutes"));
+
+                return;
+            }
+
+            args.Player.SendErrorMessage("Could not find player or account!");
+            
+
+        }
+        public static void MuteDel(CommandArgs args)
+        {
+            int index;
+
+            if (args.Parameters.Count != 3)
+            {
+                args.Player.SendErrorMessage("Invalid syntax. Valid syntax: '/report mute del <index>'");
+                return;
+            }
+
+            if (int.TryParse(args.Parameters[2], out index) && Reports.GetMutedUser(index) != null)
+            {
+                var muted = Reports.GetMutedUser(index);
+                Reports.RemoveMute(index);
+                args.Player.SendSuccessMessage("Successfully deleted report mute: {0}", index.ToString());
+
+                if (TSPlayer.FindByNameOrID(muted.User).FirstOrDefault() != null)
+                    TSPlayer.FindByNameOrID(muted.User).FirstOrDefault().SendSuccessMessage("You may now again use /report!");
+
+                return;
+            }
+
+            args.Player.SendErrorMessage("Invalid ID or syntax. Valid syntax: '/report mute delete <id>'");
+        }
+
+        public static void ListMute(CommandArgs args)
+        {
+            if (args.Parameters.Count > 3)
+            {
+                args.Player.SendErrorMessage("Invalid syntax. Valid syntax: '/report mute list (page)'");
+                return;
+            }
+            var reportMutes = Reports.GetAllMutes();
+
+            if (!PaginationTools.TryParsePageNumber(args.Parameters, 2, args.Player, out int pageNumber))
+                return;
+
+            List<string> rlist = new List<string>();
+            foreach (var m in reportMutes)
+                rlist.Add($"{m.ID} | {m.User}, expires on: {m.Expiration}");
+
+            PaginationTools.SendPage(args.Player, pageNumber, rlist,
+                new PaginationTools.Settings
+                {
+                    HeaderFormat = "Reports Mutes ({0}/{1}):",
+                    FooterFormat = "Type {0}report mute list {{0}} for more.".SFormat(Commands.Specifier),
+                    NothingToDisplayString = "There are currently no report mutes."
+                });
         }
 
         public static void Teleport(CommandArgs args)
@@ -214,6 +306,9 @@ namespace ReportManager.Subcommands
                             "info <id> - Gets all info on a report.",
                             "list - Lists all reports.",
                             "delete <name> - Deletes a report.",
+                            "mute <name> - Prohibits someone from using /report.",
+                            "mute list - Lists all /report muted users.",
+                            "mute del <id> - Deletes a report mute."
                 });
 
             PaginationTools.SendPage(args.Player, pageNumber, lines,

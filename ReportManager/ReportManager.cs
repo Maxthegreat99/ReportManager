@@ -101,6 +101,14 @@ namespace ReportManager
                             plr.SendSuccessMessage("You have been unmuted!");
                         }
 
+                        var reportMutes = Reports.GetAllMutes();
+                        if(reportMutes != null 
+                           && reportMutes.Any(i => i.User == plr.Name && i.Expiration <= DateTime.UtcNow))
+                        {
+                            var reportMute = reportMutes.First(i => i.User == plr.Name);
+                            Reports.RemoveMute(reportMute.ID);
+                            plr.SendSuccessMessage("You can now use /report!");
+                        }
                         
                     }
                 }
@@ -209,6 +217,11 @@ namespace ReportManager
 
         private void Report(CommandArgs args)
         {
+            if(Reports.GetAllMutes() != null && Reports.GetAllMutes().Any(i => i.User == args.Player.Name))
+            {
+                args.Player.SendErrorMessage("You have been prohibited from using /report");
+                return;
+            }
 
             switch(args.Parameters.FirstOrDefault())
             {
@@ -252,6 +265,35 @@ namespace ReportManager
                         return;
                     }
                     Subcommands.Report.Info(args);
+                    break;
+                case "mute":
+                case "m":
+                    if (!args.Player.HasPermission(Permissions.staff))
+                    {
+                        args.Player.SendErrorMessage("Invalid subcommand.");
+                        return;
+                    }
+
+                    if (args.Parameters.Count < 2)
+                    {
+                        Subcommands.Report.Help(args);
+                        return;
+                    }
+
+                    switch (args.Parameters[1])
+                    {
+                        case "del":
+                        case "d":
+                            Subcommands.Report.MuteDel(args);
+                            break;
+                        case "list":
+                        case "l":
+                            Subcommands.Report.ListMute(args);
+                            break;
+                        default:
+                            Subcommands.Report.MuteAdd(args);
+                            break;
+                    }
                     break;
                 default:
                     if (args.Parameters.Count == 0)
