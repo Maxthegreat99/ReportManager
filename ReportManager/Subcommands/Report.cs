@@ -40,7 +40,7 @@ namespace ReportManager.Subcommands
                     type = ReportType.Transfer;
                     break;
                 case "other":
-                    if (args.Parameters.Count < 2 && args.Parameters.Count > 3)
+                    if (args.Parameters.Count < 2 || args.Parameters.Count > 3)
                     {
                         args.Player.SendErrorMessage("Invalid syntax. Valid syntax: '/report other \"<reason>\"");
                         return;
@@ -118,6 +118,12 @@ namespace ReportManager.Subcommands
                 var username = (TSPlayer.FindByNameOrID(args.Parameters[1]).FirstOrDefault() != null ?
                                 TSPlayer.FindByNameOrID(args.Parameters[1]).FirstOrDefault().Name :
                                 TShock.UserAccounts.GetUserAccountByName(args.Parameters[1]).Name);
+
+                if (TShock.Groups.GetGroupByName(TShock.UserAccounts.GetUserAccountByName(args.Parameters[1]).Group).HasPermission(ReportManager.Permissions.staff))
+                {
+                    args.Player.SendErrorMessage("You cannot report mute another staff member!");
+                    return;
+                }
 
                 Reports.InsertMute(username, duration);
                 args.Player.SendSuccessMessage("Prohibited {0} from using /report {1}!", username, (seconds == 0 ? "permanently" : $"for {(seconds / 60)} minutes"));
