@@ -26,7 +26,7 @@ A plugin for TShock giving servers easy-to-use report, warn and mute commands.
 - `MaxReportsPerMinute` - the maximum amount of reports a player can create per minute.
 
 ## Dependencies
-Report Manager uses Discord.Net dependencies to send reports through Webhooks, you can either get from from each [realease](github.com/Maxthegreat99/ReportManager/releases) or get them here from source here:
+Report Manager uses Discord.Net dependencies to send reports through Webhooks, you can either get from from each [release](https://github.com/Maxthegreat99/ReportManager/releases) or get them here from source here:
 - [Discord.Net.Webhooks](https://www.nuget.org/packages/Discord.Net.Webhook/#versions-body-tab)
 - [Discord.Net.Rest](https://www.nuget.org/packages/Discord.Net.Rest/)
 - [Discord.Net.Core](https://www.nuget.org/packages/Discord.Net.Core/)
